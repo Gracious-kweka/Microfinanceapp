@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microfinance Management System (MMS)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for Financial Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            800: '#1E293B',
+                            900: '#0F172A',
+                        },
+                        emerald: {
+                            500: '#10B981',
+                            600: '#059669',
+                            700: '#047857',
+                        },
+                        amber: {
+                            500: '#F59E0B',
+                            600: '#D97706',
+                        },
+                        rose: {
+                            500: '#F43F5E',
+                            600: '#E11D48',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+        }
+        /* Custom scrollbar for modern look */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .toast {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2"></div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-navy-900 text-slate-300 flex flex-col justify-between hidden md:flex flex-shrink-0 shadow-xl z-20">
+        <div>
+            <!-- Logo / Brand Header -->
+            <div class="p-5 flex items-center gap-3 border-b border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-emerald-900/40">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white tracking-wide text-base leading-tight">ApexMicro</h1>
+                    <p class="text-xs text-slate-400">Finance System v2.4</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-4 space-y-1 text-sm font-medium">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white bg-emerald-600 font-semibold shadow-sm transition-all">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                    <span>Overview Dashboard</span>
+                </button>
+
+                <button onclick="switchTab('origination')" id="nav-origination" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+                    <i class="fa-solid fa-file-signature w-5 text-center"></i>
+                    <span>Loan Origination</span>
+                    <span id="pending-count-badge" class="ml-auto text-xs font-bold bg-amber-500 text-slate-900 px-2 py-0.5 rounded-full">2</span>
+                </button>
+
+                <button onclick="switchTab('clients')" id="nav-clients" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+                    <i class="fa-solid fa-users w-5 text-center"></i>
+                    <span>Clients & Groups</span>
+                </button>
+
+                <button onclick="switchTab('repayments')" id="nav-repayments" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+                    <i class="fa-solid fa-money-bill-transfer w-5 text-center"></i>
+                    <span>Repayments & Settlement</span>
+                </button>
+
+                <button onclick="switchTab('collections')" id="nav-collections" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all">
+                    <i class="fa-solid fa-triangle-exclamation w-5 text-center"></i>
+                    <span>Field Collection & PAR</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- User Profile Footer -->
+        <div class="p-4 border-t border-slate-800 flex items-center gap-3 bg-slate-900/50">
+            <div class="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white text-sm border border-slate-600">
+                JD
+            </div>
+            <div class="overflow-hidden">
+                <p class="text-xs font-semibold text-white truncate">John Doe (Credit Officer)</p>
+                <p class="text-[11px] text-slate-400 truncate">Dar es Salaam Branch</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-slate-50">
+
+        <!-- TOP BAR -->
+        <header class="bg-white border-b border-slate-200 px-6 py-3.5 flex items-center justify-between z-10">
+            <div class="flex items-center gap-4">
+                <!-- Mobile menu toggle -->
+                <button class="md:hidden text-slate-600 text-lg hover:text-slate-900" onclick="toggleMobileSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h2 id="page-title" class="text-xl font-bold text-slate-800 tracking-tight">Overview Dashboard</h2>
+            </div>
+
+            <!-- Header Right Quick Tools -->
+            <div class="flex items-center gap-3">
+                <!-- System Status Indicator -->
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>System Online (Sync Ready)</span>
+                </div>
+
+                <!-- Currency Selector Simulator -->
+                <select id="currency-select" class="bg-slate-100 border border-slate-200 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="TZS">TZS (Shilling)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="KES">KES (Shilling)</option>
+                </select>
+
+                <!-- Quick Action New Loan -->
+                <button onclick="switchTab('origination')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition shadow-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Application</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT TAB CONTAINERS -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-6">
+
+            <!-- TAB 1: OVERVIEW DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <!-- METRIC CARDS GRID -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Total Portfolio -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Portfolio</p>
+                                <h3 class="text-2xl font-bold text-slate-900 mt-1 font-mono" id="metric-portfolio">TZS 485.4M</h3>
+                                <p class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-arrow-trend-up"></i> +4.2% vs last month
+                                </p>
+                            </div>
+                            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                                <i class="fa-solid fa-wallet text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PAR 30+ Risk -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">PAR 30+ (At Risk)</p>
+                                <h3 class="text-2xl font-bold text-rose-600 mt-1 font-mono" id="metric-par">3.85%</h3>
+                                <p class="text-xs text-emerald-600 font-medium mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check"></i> Below target threshold (5%)
+                                </p>
+                            </div>
+                            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                                <i class="fa-solid fa-shield-halved text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Borrowers -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Borrowers</p>
+                                <h3 class="text-2xl font-bold text-slate-900 mt-1 font-mono">1,420</h3>
+                                <p class="text-xs text-slate-500 font-medium mt-1">
+                                    Across 48 Solidarity Groups
+                                </p>
+                            </div>
+                            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                                <i class="fa-solid fa-user-group text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Collections -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Today's Collections</p>
+                                <h3 class="text-2xl font-bold text-slate-900 mt-1 font-mono" id="metric-collections">TZS 12.8M</h3>
+                                <p class="text-xs text-amber-600 font-medium mt-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-clock"></i> 84% of daily target
+                                </p>
+                            </div>
+                            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                                <i class="fa-solid fa-hand-holding-dollar text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHARTS AND COLLECTION PROGRESS SECTION -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Collection vs Target Chart -->
+                    <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base">Weekly Collection Performance</h3>
+                                <p class="text-xs text-slate-500">Actual collections vs Target projection (in TZS Millions)</p>
+                            </div>
+                            <span class="text-xs font-semibold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md">This Week</span>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="collectionsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Collection Target Gauge Card & Quick Actions -->
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base mb-1">Monthly Target Progress</h3>
+                            <p class="text-xs text-slate-500 mb-4">Target: TZS 250,000,000</p>
+
+                            <!-- Circular/Bar Progress -->
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">Disbursement Goal</span>
+                                        <span class="text-emerald-600">82% (TZS 205M)</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                        <div class="bg-emerald-500 h-full rounded-full" style="width: 82%"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                        <span class="text-slate-600">Recovery Target</span>
+                                        <span class="text-blue-600">91% (TZS 182M)</span>
+                                    </div>
+                                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                        <div class="bg-blue-600 h-full rounded-full" style="width: 91%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Workflow Actions -->
+                        <div class="mt-6 pt-4 border-t border-slate-100 space-y-2">
+                            <p class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Quick Actions</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="switchTab('repayments')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-qrcode text-emerald-600"></i> Quick Payment
+                                </button>
+                                <button onclick="switchTab('clients')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition">
+                                    <i class="fa-solid fa-user-plus text-blue-600"></i> Register Client
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RECENT TRANSACTIONS TABLE -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Recent Ledger Activity</h3>
+                            <p class="text-xs text-slate-500">Real-time disbursements and repayments processed</p>
+                        </div>
+                        <button onclick="switchTab('repayments')" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
+                            View All Transactions <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-100">
+                                <tr>
+                                    <th class="px-5 py-3">Txn ID</th>
+                                    <th class="px-5 py-3">Borrower / Group</th>
+                                    <th class="px-5 py-3">Type</th>
+                                    <th class="px-5 py-3">Channel</th>
+                                    <th class="px-5 py-3">Amount</th>
+                                    <th class="px-5 py-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium text-xs sm:text-sm">
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="px-5 py-3.5 font-mono text-slate-500">TXN-8841</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800">Amina Saidi (Umoja SHG)</td>
+                                    <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium text-xs">Repayment</span></td>
+                                    <td class="px-5 py-3.5"><i class="fa-solid fa-mobile-screen text-slate-400 mr-1"></i> M-Pesa</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800 font-mono">TZS 150,000</td>
+                                    <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">Completed</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="px-5 py-3.5 font-mono text-slate-500">TXN-8840</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800">Juma Bakari</td>
+                                    <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-medium text-xs">Disbursement</span></td>
+                                    <td class="px-5 py-3.5"><i class="fa-solid fa-building-columns text-slate-400 mr-1"></i> Bank Transfer</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800 font-mono">TZS 2,500,000</td>
+                                    <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">Disbursed</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="px-5 py-3.5 font-mono text-slate-500">TXN-8839</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800">Faraji Rashid</td>
+                                    <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-medium text-xs">Repayment</span></td>
+                                    <td class="px-5 py-3.5"><i class="fa-solid fa-money-bill-wave text-slate-400 mr-1"></i> Cash (Field)</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800 font-mono">TZS 85,000</td>
+                                    <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">Completed</span></td>
+                                </tr>
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="px-5 py-3.5 font-mono text-slate-500">TXN-8838</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800">Neema Mussa</td>
+                                    <td class="px-5 py-3.5"><span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 font-medium text-xs">Penalty Fee</span></td>
+                                    <td class="px-5 py-3.5"><i class="fa-solid fa-robot text-slate-400 mr-1"></i> System Auto</td>
+                                    <td class="px-5 py-3.5 font-semibold text-slate-800 font-mono">TZS 15,000</td>
+                                    <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-semibold">Overdue</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: LOAN ORIGINATION & MAKER-CHECKER WORKFLOW -->
+            <div id="tab-origination" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left Column: Interactive Application Form -->
+                    <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-lg">New Loan Application (Maker)</h3>
+                            <p class="text-xs text-slate-500">Fill in client parameters to calculate repayment schedule automatically.</p>
+                        </div>
+
+                        <form id="loan-origination-form" onsubmit="handleLoanSubmit(event)" class="space-y-4 text-xs">
+                            <!-- Select Borrower -->
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Select Borrower / Group *</label>
+                                <select id="orig-borrower" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                                    <option value="">-- Choose registered borrower --</option>
+                                    <option value="Amina Saidi">Amina Saidi - NIDA: 19840211-1001</option>
+                                    <option value="Juma Bakari">Juma Bakari - NIDA: 19910520-4002</option>
+                                    <option value="Umoja Women SHG">Umoja Women Group (Solidarity Group)</option>
+                                    <option value="Halima Hassan">Halima Hassan - NIDA: 19951201-8812</option>
+                                </select>
+                            </div>
+
+                            <!-- Product & Amount -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Loan Product *</label>
+                                    <select id="orig-product" onchange="calculateSchedule()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <option value="Business Loan">Micro Business Loan</option>
+                                        <option value="Emergency Loan">Emergency Express</option>
+                                        <option value="Agri Loan">Agri-Business Boost</option>
+                                        <option value="Group Loan">Solidarity Group Loan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Principal Amount (<span class="currency-label">TZS</span>) *</label>
+                                    <input type="number" id="orig-amount" value="1000000" step="50000" oninput="calculateSchedule()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-mono font-bold focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                                </div>
+                            </div>
+
+                            <!-- Calculation Type, Duration & Interest Rate -->
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Duration (Months) *</label>
+                                    <input type="number" id="orig-duration" value="6" min="1" max="36" oninput="calculateSchedule()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Interest Rate (% / Mo) *</label>
+                                    <input type="number" id="orig-rate" value="3.5" step="0.1" oninput="calculateSchedule()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-semibold focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Interest Method *</label>
+                                    <select id="orig-method" onchange="calculateSchedule()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <option value="flat">Flat Rate</option>
+                                        <option value="reducing">Reducing Balance</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="pt-2 flex gap-3">
+                                <button type="submit" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i> Submit for Approval
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right Column: Live Amortization Schedule Preview -->
+                    <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg">Live Repayment Preview</h3>
+                                    <p class="text-xs text-slate-500">Calculated schedule based on selected variables</p>
+                                </div>
+                                <span class="bg-emerald-50 text-emerald-700 font-mono text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-200" id="calc-monthly-badge">
+                                    TZS 201,667 / month
+                                </span>
+                            </div>
+
+                            <!-- Key Summary Stats -->
+                            <div class="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl mb-4 text-center">
+                                <div>
+                                    <p class="text-[10px] uppercase font-semibold text-slate-400">Total Interest</p>
+                                    <p class="text-xs font-bold font-mono text-slate-800" id="summary-interest">TZS 210,000</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] uppercase font-semibold text-slate-400">Total Payable</p>
+                                    <p class="text-xs font-bold font-mono text-emerald-700" id="summary-total">TZS 1,210,000</p>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] uppercase font-semibold text-slate-400">Processing Fee (2%)</p>
+                                    <p class="text-xs font-bold font-mono text-slate-800" id="summary-fee">TZS 20,000</p>
+                                </div>
+                            </div>
+
+                            <!-- Amortization Table -->
+                            <div class="overflow-x-auto max-h-56 border border-slate-100 rounded-lg">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-100 text-slate-500 font-semibold sticky top-0">
+                                        <tr>
+                                            <th class="p-2">#</th>
+                                            <th class="p-2">Principal</th>
+                                            <th class="p-2">Interest</th>
+                                            <th class="p-2">Total Due</th>
+                                            <th class="p-2">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="schedule-tbody" class="divide-y divide-slate-100 font-mono">
+                                        <!-- Dynamic schedule rows will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAKER-CHECKER APPROVAL QUEUE -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Pending Approval Queue (Checker View)</h3>
+                            <p class="text-xs text-slate-500">Requires Branch Manager / Credit Committee authorization</p>
+                        </div>
+                        <span class="text-xs font-semibold bg-amber-100 text-amber-800 px-3 py-1 rounded-full" id="queue-badge-count">2 Pending Review</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-100">
+                                <tr>
+                                    <th class="px-5 py-3">Applicant</th>
+                                    <th class="px-5 py-3">Product</th>
+                                    <th class="px-5 py-3">Amount</th>
+                                    <th class="px-5 py-3">Term</th>
+                                    <th class="px-5 py-3">Maker Agent</th>
+                                    <th class="px-5 py-3">Risk Assessment</th>
+                                    <th class="px-5 py-3 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approval-queue-tbody" class="divide-y divide-slate-100 font-medium">
+                                <tr id="approval-row-1" class="hover:bg-slate-50 transition">
+                                    <td class="px-5 py-3.5 font-bold text-slate-800">Halima Hassan</td>
+                                    <td class="px-5 py-3.5">Micro Business Loan</td>
+                                    <td class="px-5 py-3.5 font-mono font-semibold text-slate-800">TZS 1,500,000</td>
+                                    <td class="px-5 py-3.5">6 Months (Flat 3.5%)</td>
+                                    <td class="px-5 py-3.5 text-slate-500">Officer John Doe</td>
+                                    <td class="px-5 py-3.5">
+                                        <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-semibold">Low Risk (Credit Score: 740)</span>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-right space-x-2">
+                                        <button onclick="approveLoan(1, 'Halima Hassan')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold transition">Approve & Disburse</button>
+                                        <button onclick="rejectLoan(1)" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md text-xs font-semibold transition">Reject</button>
+                                    </td>
+                                </tr>
+                                <tr id="approval-row-2" class="hover:bg-slate-50 transition">
+                                    <td class="px-5 py-3.5 font-bold text-slate-800">Umoja Women Group</td>
+                                    <td class="px-5 py-3.5">Solidarity Group Loan</td>
+                                    <td class="px-5 py-3.5 font-mono font-semibold text-slate-800">TZS 5,000,000</td>
+                                    <td class="px-5 py-3.5">12 Months (Reducing 3.0%)</td>
+                                    <td class="px-5 py-3.5 text-slate-500">Officer Sarah K.</td>
+                                    <td class="px-5 py-3.5">
+                                        <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-700 text-xs font-semibold">Medium Risk (Joint Liability)</span>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-right space-x-2">
+                                        <button onclick="approveLoan(2, 'Umoja Women Group')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs font-semibold transition">Approve & Disburse</button>
+                                        <button onclick="rejectLoan(2)" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-md text-xs font-semibold transition">Reject</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: CLIENT & GROUP MANAGEMENT (KYC) -->
+            <div id="tab-clients" class="tab-content hidden space-y-6">
+                <!-- Search and Filter Bar -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="relative w-full sm:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-sm"></i>
+                        <input type="text" id="client-search-input" onkeyup="filterClients()" placeholder="Search client name, ID, or group..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <select id="group-filter" onchange="filterClients()" class="bg-slate-50 border border-slate-200 text-xs font-semibold rounded-lg px-3 py-2 outline-none">
+                            <option value="all">All Membership Types</option>
+                            <option value="Umoja Women Group">Umoja Women Group</option>
+                            <option value="Individual">Individual Borrowers</option>
+                        </select>
+                        <button onclick="openToast('New client registration wizard opened', 'info')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition shadow-sm">
+                            <i class="fa-solid fa-user-plus mr-1"></i> Register Client
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CLIENT DIRECTORY GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="clients-grid">
+                    <!-- Client Card 1 -->
+                    <div class="client-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 relative hover:border-emerald-300 transition" data-name="Amina Saidi" data-group="Umoja Women Group">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-sm border border-emerald-200">
+                                    AS
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Amina Saidi</h4>
+                                    <p class="text-xs text-slate-500"><i class="fa-solid fa-id-card text-slate-400 mr-1"></i>NIDA: 19840211-1001</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[10px]">Verified KYC</span>
+                        </div>
+
+                        <div class="text-xs space-y-1.5 pt-2 border-t border-slate-100 text-slate-600">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Group Membership:</span>
+                                <span class="font-semibold text-slate-800">Umoja Women Group</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Active Loans:</span>
+                                <span class="font-semibold text-slate-800">1 (TZS 1,200,000)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Collateral Pledged:</span>
+                                <span class="font-semibold text-slate-800">Motorcycle (MC-781A)</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="viewClientDetails('Amina Saidi', 'Umoja Women Group', 'TZS 1,200,000', 'Motorcycle MC-781A')" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">View Profile</button>
+                        </div>
+                    </div>
+
+                    <!-- Client Card 2 -->
+                    <div class="client-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 relative hover:border-emerald-300 transition" data-name="Juma Bakari" data-group="Individual">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-sm border border-blue-200">
+                                    JB
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Juma Bakari</h4>
+                                    <p class="text-xs text-slate-500"><i class="fa-solid fa-id-card text-slate-400 mr-1"></i>NIDA: 19910520-4002</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold text-[10px]">Verified KYC</span>
+                        </div>
+
+                        <div class="text-xs space-y-1.5 pt-2 border-t border-slate-100 text-slate-600">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Group Membership:</span>
+                                <span class="font-semibold text-slate-800">Individual</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Active Loans:</span>
+                                <span class="font-semibold text-slate-800">1 (TZS 2,500,000)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Collateral Pledged:</span>
+                                <span class="font-semibold text-slate-800">Commercial Plot Title</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="viewClientDetails('Juma Bakari', 'Individual', 'TZS 2,500,000', 'Commercial Plot Title')" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">View Profile</button>
+                        </div>
+                    </div>
+
+                    <!-- Client Card 3 -->
+                    <div class="client-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3 relative hover:border-emerald-300 transition" data-name="Faraji Rashid" data-group="Individual">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 rounded-full bg-rose-100 text-rose-800 font-bold flex items-center justify-center text-sm border border-rose-200">
+                                    FR
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">Faraji Rashid</h4>
+                                    <p class="text-xs text-slate-500"><i class="fa-solid fa-id-card text-slate-400 mr-1"></i>NIDA: 19880712-9011</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-semibold text-[10px]">Pending Doc</span>
+                        </div>
+
+                        <div class="text-xs space-y-1.5 pt-2 border-t border-slate-100 text-slate-600">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Group Membership:</span>
+                                <span class="font-semibold text-slate-800">Individual</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Active Loans:</span>
+                                <span class="font-semibold text-slate-800">1 (TZS 600,000)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Collateral Pledged:</span>
+                                <span class="font-semibold text-slate-800">Shop Inventory</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex gap-2">
+                            <button onclick="viewClientDetails('Faraji Rashid', 'Individual', 'TZS 600,000', 'Shop Inventory')" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: REPAYMENTS & MOBILE MONEY SETTLEMENT -->
+            <div id="tab-repayments" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left: Quick Repayment Entry Simulator -->
+                    <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-lg">Process Repayment</h3>
+                            <p class="text-xs text-slate-500">Record cash collection or trigger mobile money STK push</p>
+                        </div>
+
+                        <form onsubmit="handleRepaymentSubmit(event)" class="space-y-4 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Select Active Loan *</label>
+                                <select id="repay-loan" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 font-medium focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                                    <option value="LN-1092 - Amina Saidi">LN-1092 - Amina Saidi (Balance: TZS 850,000)</option>
+                                    <option value="LN-1095 - Juma Bakari">LN-1095 - Juma Bakari (Balance: TZS 1,800,000)</option>
+                                    <option value="LN-1088 - Faraji Rashid">LN-1088 - Faraji Rashid (Balance: TZS 220,000)</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Payment Method *</label>
+                                    <select id="repay-method" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                        <option value="M-Pesa">M-Pesa Direct</option>
+                                        <option value="Airtel Money">Airtel Money</option>
+                                        <option value="Cash">Cash (Field Agent)</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-700 mb-1">Amount Paid (<span class="currency-label">TZS</span>) *</label>
+                                    <input type="number" id="repay-amount" value="150000" step="5000" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Reference / Trans ID *</label>
+                                <input type="text" id="repay-ref" value="MP892019482X" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-mono text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                            </div>
+
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-check-circle"></i> Confirm & Generate Receipt
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Mobile Money Settlement Reconciliation feed -->
+                    <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg">Live Mobile Money Gateway Feed</h3>
+                                    <p class="text-xs text-slate-500">Automated C2B Webhook incoming transactions</p>
+                                </div>
+                                <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                    <i class="fa-solid fa-arrows-rotate animate-spin"></i> Auto-Matching Active
+                                </span>
+                            </div>
+
+                            <!-- Mobile Settlement Feed Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-slate-50 text-slate-400 uppercase font-semibold">
+                                        <tr>
+                                            <th class="p-2.5">Time</th>
+                                            <th class="p-2.5">Ref ID</th>
+                                            <th class="p-2.5">Payer Mobile</th>
+                                            <th class="p-2.5">Amount</th>
+                                            <th class="p-2.5">Reconciliation Badge</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="settlement-tbody" class="divide-y divide-slate-100 font-mono">
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="p-2.5 text-slate-500">14:22:01</td>
+                                            <td class="p-2.5 font-bold">MP892019482X</td>
+                                            <td class="p-2.5">+255 754 *** 812</td>
+                                            <td class="p-2.5 font-bold text-slate-800">TZS 150,000</td>
+                                            <td class="p-2.5"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-sans font-semibold text-[11px]"><i class="fa-solid fa-link mr-1"></i>Matched (LN-1092)</span></td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="p-2.5 text-slate-500">13:05:44</td>
+                                            <td class="p-2.5 font-bold">AIR771029411</td>
+                                            <td class="p-2.5">+255 784 *** 109</td>
+                                            <td class="p-2.5 font-bold text-slate-800">TZS 85,000</td>
+                                            <td class="p-2.5"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-sans font-semibold text-[11px]"><i class="fa-solid fa-link mr-1"></i>Matched (LN-1088)</span></td>
+                                        </tr>
+                                        <tr class="hover:bg-slate-50">
+                                            <td class="p-2.5 text-slate-500">11:12:30</td>
+                                            <td class="p-2.5 font-bold">MP891100229Z</td>
+                                            <td class="p-2.5">+255 712 *** 004</td>
+                                            <td class="p-2.5 font-bold text-slate-800">TZS 50,000</td>
+                                            <td class="p-2.5"><span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-sans font-semibold text-[11px]"><i class="fa-solid fa-circle-question mr-1"></i>Unmatched Ref</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: FIELD COLLECTION & PAR RISK TRACKER -->
+            <div id="tab-collections" class="tab-content hidden space-y-6">
+                <!-- PAR Metric Summary Breakdown Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm border-l-4 border-l-amber-500">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">PAR 1 - 30 Days</p>
+                        <h3 class="text-2xl font-bold font-mono text-slate-800 mt-1">TZS 12.4M</h3>
+                        <p class="text-xs text-amber-600 font-medium mt-1">14 Borrowers Overdue</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm border-l-4 border-l-orange-500">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">PAR 31 - 60 Days</p>
+                        <h3 class="text-2xl font-bold font-mono text-slate-800 mt-1">TZS 4.8M</h3>
+                        <p class="text-xs text-orange-600 font-medium mt-1">5 Borrowers in Warning Zone</p>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm border-l-4 border-l-rose-600">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">PAR 90+ Days (Default)</p>
+                        <h3 class="text-2xl font-bold font-mono text-rose-600 mt-1">TZS 1.2M</h3>
+                        <p class="text-xs text-rose-600 font-medium mt-1">2 Borrowers assigned to Recovery</p>
+                    </div>
+                </div>
+
+                <!-- DELINQUENT BORROWERS FOLLOW-UP QUEUE -->
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base">Field Officer Delinquency Recovery Queue</h3>
+                            <p class="text-xs text-slate-500">Directly trigger SMS notices or log field officer visits</p>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-100">
+                                <tr>
+                                    <th class="px-5 py-3">Borrower Name</th>
+                                    <th class="px-5 py-3">Days Overdue</th>
+                                    <th class="px-5 py-3">Overdue Amount</th>
+                                    <th class="px-5 py-3">Group / Location</th>
+                                    <th class="px-5 py-3">Last Contact</th>
+                                    <th class="px-5 py-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-medium">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-5 py-3.5 font-bold text-slate-800">Neema Mussa</td>
+                                    <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-semibold text-xs">18 Days</span></td>
+                                    <td class="px-5 py-3.5 font-mono font-bold text-rose-600">TZS 180,000</td>
+                                    <td class="px-5 py-3.5">Ilala Market Zone</td>
+                                    <td class="px-5 py-3.5 text-slate-500">3 days ago (Call)</td>
+                                    <td class="px-5 py-3.5 text-right space-x-1">
+                                        <button onclick="sendSMSReminder('Neema Mussa')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-md text-xs font-semibold transition"><i class="fa-solid fa-paper-plane mr-1"></i> Send SMS</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-5 py-3.5 font-bold text-slate-800">Emanuel Peter</td>
+                                    <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-rose-100 text-rose-800 rounded font-semibold text-xs">42 Days</span></td>
+                                    <td class="px-5 py-3.5 font-mono font-bold text-rose-600">TZS 450,000</td>
+                                    <td class="px-5 py-3.5">Kinondoni St.</td>
+                                    <td class="px-5 py-3.5 text-slate-500">Yesterday (Visit)</td>
+                                    <td class="px-5 py-3.5 text-right space-x-1">
+                                        <button onclick="sendSMSReminder('Emanuel Peter')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-md text-xs font-semibold transition"><i class="fa-solid fa-paper-plane mr-1"></i> Send SMS</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- RECEIPT MODAL PREVIEW -->
+    <div id="receipt-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div class="p-6 text-center space-y-4">
+                <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-900 text-lg">Repayment Receipt Generated</h3>
+                    <p class="text-xs text-slate-500">Official Payment Confirmation Preview</p>
+                </div>
+
+                <!-- Printable Receipt Content Area -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 text-left text-xs space-y-2 font-mono">
+                    <div class="text-center font-bold font-sans text-slate-800 text-sm border-b pb-2">APEX MICROFINANCE LIMITED</div>
+                    <div class="flex justify-between"><span class="text-slate-400">Receipt No:</span><span id="rcpt-no" class="font-bold text-slate-800">RCP-2026-9902</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Date/Time:</span><span id="rcpt-date">2026-10-19 16:30</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Borrower:</span><span id="rcpt-borrower" class="font-bold text-slate-800">Amina Saidi</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Method:</span><span id="rcpt-method">M-Pesa</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Ref Code:</span><span id="rcpt-ref">MP892019482X</span></div>
+                    <div class="border-t border-slate-200 pt-2 flex justify-between font-sans text-sm"><span class="font-bold">Amount Paid:</span><span id="rcpt-amount" class="font-bold text-emerald-700">TZS 150,000</span></div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="closeReceiptModal()" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">Close</button>
+                    <button onclick="window.print()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition"><i class="fa-solid fa-print mr-1"></i> Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLIENT DETAILS MODAL -->
+    <div id="client-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden border border-slate-100">
+            <div class="p-6 space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <h3 class="font-bold text-slate-800 text-base" id="modal-client-title">Client KYC Profile</h3>
+                    <button onclick="closeClientModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg">
+                        <div><p class="text-slate-400">Group Membership:</p><p id="modal-client-group" class="font-semibold text-slate-800">-</p></div>
+                        <div><p class="text-slate-400">Active Outstanding:</p><p id="modal-client-loan" class="font-semibold text-emerald-700 font-mono">-</p></div>
+                        <div class="col-span-2"><p class="text-slate-400">Collateral Pledged:</p><p id="modal-client-collateral" class="font-semibold text-slate-800">-</p></div>
+                    </div>
+
+                    <p class="font-semibold text-slate-700 border-b pb-1">Registered Documents</p>
+                    <div class="flex gap-2">
+                        <div class="p-2 border rounded-lg bg-slate-50 text-center flex-1">
+                            <i class="fa-solid fa-file-pdf text-rose-500 text-lg mb-1"></i>
+                            <p class="text-[10px] text-slate-600 font-medium">NIDA_ID_Copy.pdf</p>
+                        </div>
+                        <div class="p-2 border rounded-lg bg-slate-50 text-center flex-1">
+                            <i class="fa-solid fa-file-image text-blue-500 text-lg mb-1"></i>
+                            <p class="text-[10px] text-slate-600 font-medium">Proof_Residence.jpg</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-3 border-t flex justify-end">
+                    <button onclick="closeClientModal()" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-semibold">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & INTERACTIVITIES -->
+    <script>
+        // TAB SWITCHING SYSTEM
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Deactivate all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white', 'font-semibold', 'shadow-sm');
+                btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800/60');
+            });
+
+            // Show current selected tab
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            // Highlight current active nav button
+            const activeBtn = document.getElementById('nav-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800/60');
+                activeBtn.classList.add('bg-emerald-600', 'text-white', 'font-semibold', 'shadow-sm');
+            }
+
+            // Update Header Title
+            const pageTitles = {
+                'dashboard': 'Overview Dashboard',
+                'origination': 'Loan Origination & Maker-Checker',
+                'clients': 'Client & Group KYC Directory',
+                'repayments': 'Repayments & Mobile Money Settlement',
+                'collections': 'Field Collection & PAR Risk Tracker'
+            };
+            document.getElementById('page-title').innerText = pageTitles[tabId] || 'Microfinance System';
+        }
+
+        // DYNAMIC AMORTIZATION CALCULATOR
+        function calculateSchedule() {
+            const amount = parseFloat(document.getElementById('orig-amount').value) || 0;
+            const months = parseInt(document.getElementById('orig-duration').value) || 1;
+            const ratePerMonth = parseFloat(document.getElementById('orig-rate').value) || 0;
+            const method = document.getElementById('orig-method').value;
+
+            const tbody = document.getElementById('schedule-tbody');
+            tbody.innerHTML = '';
+
+            let balance = amount;
+            let totalInterest = 0;
+
+            if (method === 'flat') {
+                const monthlyInterest = amount * (ratePerMonth / 100);
+                const monthlyPrincipal = amount / months;
+                const monthlyTotal = monthlyPrincipal + monthlyInterest;
+                totalInterest = monthlyInterest * months;
+
+                for (let i = 1; i <= months; i++) {
+                    balance -= monthlyPrincipal;
+                    if (balance < 0) balance = 0;
+                    
+                    const row = `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-2 font-bold">${i}</td>
+                            <td class="p-2">${Math.round(monthlyPrincipal).toLocaleString()}</td>
+                            <td class="p-2 text-amber-600">${Math.round(monthlyInterest).toLocaleString()}</td>
+                            <td class="p-2 font-bold text-emerald-700">${Math.round(monthlyTotal).toLocaleString()}</td>
+                            <td class="p-2 text-slate-400">${Math.round(balance).toLocaleString()}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+
+                document.getElementById('calc-monthly-badge').innerText = `TZS ${Math.round(monthlyTotal).toLocaleString()} / mo`;
+            } else {
+                // Reducing balance simple model
+                let monthlyPrincipal = amount / months;
+                let currentBal = amount;
+
+                for (let i = 1; i <= months; i++) {
+                    let monthlyInterest = currentBal * (ratePerMonth / 100);
+                    totalInterest += monthlyInterest;
+                    let monthlyTotal = monthlyPrincipal + monthlyInterest;
+                    currentBal -= monthlyPrincipal;
+
+                    const row = `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-2 font-bold">${i}</td>
+                            <td class="p-2">${Math.round(monthlyPrincipal).toLocaleString()}</td>
+                            <td class="p-2 text-amber-600">${Math.round(monthlyInterest).toLocaleString()}</td>
+                            <td class="p-2 font-bold text-emerald-700">${Math.round(monthlyTotal).toLocaleString()}</td>
+                            <td class="p-2 text-slate-400">${Math.round(Math.max(0, currentBal)).toLocaleString()}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+                document.getElementById('calc-monthly-badge').innerText = `Reducing Rate Calc`;
+            }
+
+            document.getElementById('summary-interest').innerText = `TZS ${Math.round(totalInterest).toLocaleString()}`;
+            document.getElementById('summary-total').innerText = `TZS ${Math.round(amount + totalInterest).toLocaleString()}`;
+            document.getElementById('summary-fee').innerText = `TZS ${Math.round(amount * 0.02).toLocaleString()}`;
+        }
+
+        // HANDLE LOAN SUBMISSION
+        function handleLoanSubmit(e) {
+            e.preventDefault();
+            const borrower = document.getElementById('orig-borrower').value;
+            const amount = parseFloat(document.getElementById('orig-amount').value).toLocaleString();
+            
+            openToast(`Application submitted for ${borrower} (${amount} TZS)!`, 'success');
+
+            // Reset form
+            document.getElementById('loan-origination-form').reset();
+            calculateSchedule();
+        }
+
+        // MAKER-CHECKER ACTIONS
+        function approveLoan(rowId, borrower) {
+            const row = document.getElementById(`approval-row-${rowId}`);
+            if (row) {
+                row.remove();
+                openToast(`Loan for ${borrower} Approved & Disbursed!`, 'success');
+                updatePendingBadge();
+            }
+        }
+
+        function rejectLoan(rowId) {
+            const row = document.getElementById(`approval-row-${rowId}`);
+            if (row) {
+                row.remove();
+                openToast(`Application Rejected.`, 'info');
+                updatePendingBadge();
+            }
+        }
+
+        function updatePendingBadge() {
+            const count = document.querySelectorAll('#approval-queue-tbody tr').length;
+            document.getElementById('pending-count-badge').innerText = count;
+            document.getElementById('queue-badge-count').innerText = `${count} Pending Review`;
+        }
+
+        // CLIENT SEARCH AND FILTER
+        function filterClients() {
+            const query = document.getElementById('client-search-input').value.toLowerCase();
+            const groupFilter = document.getElementById('group-filter').value;
+            const cards = document.querySelectorAll('.client-card');
+
+            cards.forEach(card => {
+                const name = card.getAttribute('data-name').toLowerCase();
+                const group = card.getAttribute('data-group');
+
+                const matchesSearch = name.includes(query) || group.toLowerCase().includes(query);
+                const matchesGroup = (groupFilter === 'all') || (group === groupFilter);
+
+                if (matchesSearch && matchesGroup) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // REPAYMENT & RECEIPT MODAL
+        function handleRepaymentSubmit(e) {
+            e.preventDefault();
+            const loan = document.getElementById('repay-loan').value;
+            const method = document.getElementById('repay-method').value;
+            const amount = parseFloat(document.getElementById('repay-amount').value).toLocaleString();
+            const ref = document.getElementById('repay-ref').value;
+
+            // Fill receipt modal details
+            document.getElementById('rcpt-borrower').innerText = loan;
+            document.getElementById('rcpt-method').innerText = method;
+            document.getElementById('rcpt-amount').innerText = `TZS ${amount}`;
+            document.getElementById('rcpt-ref').innerText = ref;
+
+            // Show modal
+            document.getElementById('receipt-modal').classList.remove('hidden');
+        }
+
+        function closeReceiptModal() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+        }
+
+        // CLIENT DETAILS MODAL
+        function viewClientDetails(name, group, activeLoan, collateral) {
+            document.getElementById('modal-client-title').innerText = `${name} - KYC Profile`;
+            document.getElementById('modal-client-group').innerText = group;
+            document.getElementById('modal-client-loan').innerText = activeLoan;
+            document.getElementById('modal-client-collateral').innerText = collateral;
+
+            document.getElementById('client-modal').classList.remove('hidden');
+        }
+
+        function closeClientModal() {
+            document.getElementById('client-modal').classList.add('hidden');
+        }
+
+        // SMS TRIGGER SIMULATOR
+        function sendSMSReminder(name) {
+            openToast(`SMS payment reminder dispatched to ${name}`, 'success');
+        }
+
+        // TOAST NOTIFICATIONS SYSTEM
+        function openToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const bgClass = type === 'success' ? 'bg-slate-900 text-white' : 'bg-blue-900 text-white';
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-400' : 'fa-info-circle text-blue-400';
+
+            toast.className = `toast flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl text-xs font-semibold ${bgClass} border border-slate-700`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // INITIALIZE CHART.JS VISUALIZATION
+        window.onload = function () {
+            // Compute dynamic loan calculation preview on page load
+            calculateSchedule();
+
+            // Render Chart
+            const ctx = document.getElementById('collectionsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                    datasets: [
+                        {
+                            label: 'Actual Collected (TZS M)',
+                            data: [18.2, 22.4, 19.8, 25.1, 28.5, 12.8],
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2.5
+                        },
+                        {
+                            label: 'Daily Target (TZS M)',
+                            data: [20, 20, 20, 20, 20, 15],
+                            borderColor: '#cbd5e1',
+                            borderDash: [5, 5],
+                            fill: false,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { family: 'Inter', size: 11 },
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#f1f1f1' },
+                            ticks: { font: { family: 'Inter', size: 10 } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Inter', size: 10 } }
+                        }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
